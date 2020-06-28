@@ -24,7 +24,7 @@ setup(
     url='https://github.com/hieupth/brainium',
     download_url='https://github.com/hieupth/brainium/archive/v_01.tar.gz',
     keywords=['machine learning', 'deep learning'],
-    install_requires=['tensorflow-gpu'],
+    install_requires=['tensorflow-gpu', 'pydesign'],
     classifiers=[
         'Development Status :: 1 - Planning',
         'Intended Audience :: Developers',

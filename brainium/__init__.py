@@ -7,3 +7,14 @@
 #  you must distribute your contributions under the same license as the original.                                      -
 # ----------------------------------------------------------------------------------------------------------------------
 from __future__ import absolute_import
+from pydesign import Singleton, Locator
+
+
+# We define a cortex class as a singleton service locator pattern
+# which has a responsibility to keep all services of the library.
+class Cortex(Locator, metaclass=Singleton):
+    pass
+
+
+# Now we create a cortex instance to work.
+cortex = Cortex()
