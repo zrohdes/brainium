@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------------------------------------------------
-#  Copyright (c) 2020, the Neuralise authors. All rights reserved.                                                     -
+#  Copyright (c) 2020, The Brainium Authors. All rights reserved.                                                      -
 #  ---------------------------------------------------------------------------------------------------------------------
 #  Licensed under CC BY-NC-SA 4.0.                                                                                     -
 #  You can use and adapt materials for non-commercial purposes as long as giving                                       -
