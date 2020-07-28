@@ -7,3 +7,4 @@
 #  distribute your contributions under the same license as the original.                                               -
 # ----------------------------------------------------------------------------------------------------------------------
 from __future__ import absolute_import
+from .term import Term
