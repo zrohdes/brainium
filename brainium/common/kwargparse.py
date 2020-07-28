@@ -82,7 +82,7 @@ class KwargParse(KwargParseInterface):
         """
         self.containers = dict()
 
-    def add(self, name=None, key=None, default=None) -> KwargParseInterface:
+    def add(self, name=None, key=None, default=None):
         """
         Add a kwarg parse handle.
         :param name:    name of handle.
@@ -93,7 +93,7 @@ class KwargParse(KwargParseInterface):
         self.containers[name] = KwargParseHandle(name, key, default)
         return self
 
-    def remove(self, name=None) -> KwargParseInterface:
+    def remove(self, name=None):
         """
         Remove a kwarg parse handle.
         :param name:    name of handle to be removed.
