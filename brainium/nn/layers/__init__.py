@@ -9,3 +9,4 @@
 from __future__ import absolute_import
 from .layer import Layer
 from .activation import Activation
+from .convolution import Convolution, Deconvolution
