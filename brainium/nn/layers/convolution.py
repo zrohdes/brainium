@@ -6,8 +6,8 @@
 #  appropriate credit by citing the authors. If you adapt the materials, you must                                      -
 #  distribute your contributions under the same license as the original.                                               -
 # ----------------------------------------------------------------------------------------------------------------------
-from copy import deepcopy as copy
 from tensorflow import keras
+from copy import deepcopy as copy
 from brainium.nn.layers import Layer
 from brainium.common import generic, KwargParse
 
@@ -55,11 +55,11 @@ class Convolution(Layer):
         :param kwargs: keyword arguments to be passed.
         """
         # Invoke super constructor.
-        super(Convolution, self).__init__(**kwargs, name='conv')
+        super(Convolution, self).__init__(**dict(kwargs, name='conv'))
         # Assign variables.
         self.thin = self.args.pop('thin', False)
 
-    def kwargparse(self, **kwargs) -> KwargParse:
+    def kwargparser(self, **kwargs) -> KwargParse:
         """
         Get keyword arguments parser.
         :param kwargs:  keyword arguments to be passed.
@@ -123,17 +123,17 @@ class SubPixelConvolution(Layer):
         :param kwargs: keyword arguments to be passed.
         """
         # Invoke super constructor.
-        super(SubPixelConvolution, self).__init__(**kwargs, name='pixel_conv')
+        super(SubPixelConvolution, self).__init__(**dict(kwargs, name='pixel_conv'))
         # Assign variables.
         self.r = self.args.pop('r', 2)
         self.thin = self.args.pop('thin', False)
         self.args.update(filters=int(self.r * self.r * self.args.pop('filters', 64)))
 
-    def kwargparse(self, **kwargs) -> KwargParse:
+    def kwargparser(self, **kwargs) -> KwargParse:
         """
         Get keyword arguments parser.
         :param kwargs:  keyword arguments to be passed.
-        :return:        a keyword arguments parser.
+        :return:        keyword arguments parser.
         """
         return copy(PARSER).add('r', None, 2)
 
@@ -163,7 +163,7 @@ class SubPixelConvolution(Layer):
         batch = keras.backend.shape(x)[0]
         x = keras.backend.reshape(x, [batch, a, b, int(c / (r * r)), r, r])
         x = keras.backend.permute_dimensions(x, (0, 1, 2, 5, 4, 3))
-        # Keras backend does not support tf.split, so in future versions this could be nicer
+        # Keras backend does not support tf.split, so we implement it.
         x = [x[:, i, :, :, :, :] for i in range(a)]
         x = keras.backend.concatenate(x, 2)
         x = [x[:, i, :, :, :] for i in range(b)]
@@ -175,16 +175,16 @@ class SubPixelConvolution(Layer):
         """
         Apply processing steps.
         :param inputs:  input tensor.
-        :param kwargs:  keyword arguments to be passed.
-        :return:        processed tensor.
+        :param kwargs:  additional keyword arguments to be passed.
+        :return:        output tensor.
         """
         return self.phase_shift(self.func(inputs, **kwargs))
 
     def compute_output_shape(self, input_shape):
         """
         Compute output shape of the layer.
-        :param input_shape: shape of input.
-        :return:            shape of output.
+        :param input_shape: shape of input tensor.
+        :return:            shape of output tensor.
         """
         shape = self.func.compute_output_shape(input_shape)
         shape = (shape[0], self.r * shape[1], self.r * shape[2], shape[3] / (self.r * self.r))
@@ -192,7 +192,7 @@ class SubPixelConvolution(Layer):
 
     def get_config(self):
         """
-        Generate the configuration.
+        Generate configuration of the layer.
         :return: config dict.
         """
         config = self.func.get_config()
@@ -203,27 +203,30 @@ class SubPixelConvolution(Layer):
         return config
 
 
-class Deconvolution(Layer):
+class TransposeConvolution(Layer):
     """
-    The process of filtering a signal to compensate for an undesired convolution.
+    Upsample the input feature map to a desired output feature map using some learnable parameters.
     ---------
     @author:    Hieu Pham.
-    @created:   6th August, 2020.
+    @created:   11st August, 2020.
     """
+    # Define available operators.
+    OPERATORS = (keras.layers.Conv1DTranspose, keras.layers.Conv2DTranspose, keras.layers.Conv3DTranspose)
+
     def __init__(self, **kwargs):
         """
         Class constructor.
         :param kwargs:  keyword arguments to be passed.
         """
-        # Invoke super constructor.
-        super(Deconvolution, self).__init__(**kwargs, name='deconv')
-        # Assign variables.
-        self.r = self.args.pop('r', 2)
-        self.thin = self.args.pop('thin', False)
-        self.method = str(self.args.pop('method', None)).lower()
+        super(TransposeConvolution, self).__init__(**kwargs)
 
-    def kwargparse(self, **kwargs) -> KwargParse:
-        return copy(PARSER).add('r', None, 2).add('method', None, None)
+    def kwargparser(self, **kwargs) -> KwargParse:
+        """
+        Get keyword arguments parser.
+        :param kwargs:  keyword arguments to be passed.
+        :return:        keyword arguments parser.
+        """
+        return PARSER
 
     def build(self, input_shape):
         """
@@ -231,22 +234,54 @@ class Deconvolution(Layer):
         :param input_shape: shape of input.
         :return:            anything.
         """
+        # Calculate input dimension.
+        dim = len(input_shape) - 2
+        # Calculate max dimension.
+        mdim = len(TransposeConvolution.OPERATORS)
+        # Check dimension.
+        assert 0 < dim <= mdim, \
+            self.message('only supports dimension %s' % generic.content(['%sD' % (i + 1) for i in range(mdim)]))
+        # Assign operator function.
+        self.func = TransposeConvolution.OPERATORS[dim](**self.args)
+
+
+class Deconvolution(Layer):
+    """
+    The process of filtering a signal to compensate for an undesired convolution.
+    ---------
+    @author:    Hieu Pham.
+    @created:   6th August, 2020.
+    @modified:  11st August, 2020.
+    """
+    def __init__(self, **kwargs):
+        """
+        Class constructor.
+        :param kwargs:  keyword arguments to be passed.
+        """
+        # Invoke super constructor.
+        super(Deconvolution, self).__init__(**dict(kwargs, name='deconv'))
+        # Assign variables.
+        self.method = str(self.args.pop('method', None)).lower()
         # Check method.
         assert self.method in ('pixel', 'none'), \
-            self.message('method %s not found. Try again with %s' % (self.method, generic.content(['pixel', 'none'])))
-        # In case method is pixel.
-        if self.method == 'pixel':
-            self.func = SubPixelConvolution(**self.args, thin=self.thin, r=self.r)
-        # Otherwise.
-        else:
-            # Calculate input shape.
-            dim = len(input_shape) - 2
-            # Assign variables.
-            ops = [keras.layers.Conv2DTranspose, keras.layers.Conv3DTranspose]
-            #
-            assert dim in (2, 3), self.message('only supports dimension 2D and 3D.')
-            # Assign operator function.
-            self.func = ops[dim - 2](**self.args)
+            self.message('method %s not found. Try again with pixel or none.' % self.method)
+        # Assign operator function.
+        self.func = SubPixelConvolution(**self.kwargs) if self.method == 'pixel' else TransposeConvolution(**self.args)
+
+    def kwargparser(self, **kwargs) -> KwargParse:
+        """
+        Get keyword arguments parser.
+        :param kwargs:  keyword arguments to be passed.
+        :return:        keyword arguments parser.
+        """
+        return KwargParse().add('method', None, None)
+
+    def get_config(self):
+        """
+        Generate configuration of the layer.
+        :return: config dict.
+        """
+        return self.func.get_config()
 
     def title(self) -> str:
         """
