@@ -27,53 +27,54 @@ class Layer(keras.layers.Layer, Common, ABC):
         # Assign variables.
         self.func = None
         self.term = Term(self, **kwargs)
-        self.parser = self.kwargparse(**kwargs)
-        self.args = self.parse(**kwargs)
+        self.parser = self.kwargparser(**kwargs)
+        self.kwargs, self.args = self.parse(**kwargs)
         # Invoke parent constructor.
         super(Layer, self).__init__(name=self.term.fullname)
 
-    def kwargparse(self, **kwargs) -> KwargParse:
+    def kwargparser(self, **kwargs) -> KwargParse:
         """
         Get keyword arguments parser.
-        :param kwargs:  keyword arguments to be passed.
-        :return:        a keyword arguments parser.
+        :param kwargs:  additional keyword arguments to be passed.
+        :return:        keyword arguments parser.
         """
         return KwargParse()
 
     def parse(self, **kwargs) -> dict:
         """
-        Parse layer arguments from input keyword arguments.
-        :param kwargs:  keyword arguments to be passed.
+        Parse arguments from input keyword arguments.
+        :param kwargs:  keyword arguments to be parsed.
         :return:        arguments dict.
         """
+        # Assign variables
         args = kwargs.copy()
         # Get special config arguments.
         if '_conf' in kwargs:
             args.update(kwargs.get(self.term.basename, dict()))
             args.update(kwargs.get(self.term.fullname, dict()))
         # Return parsed arguments.
-        return self.parser.parse(None, **args)
+        return args, self.parser.parse(None, **args)
 
     def call(self, inputs, **kwargs):
         """
         Apply processing steps.
-        :param inputs:  inputs tensor.
+        :param inputs:  input tensor.
         :param kwargs:  keyword arguments to be passed.
-        :return:        processed tensor.
+        :return:        output tensor.
         """
         assert callable(self.func), self.message('function must be callable.')
         return self.func(inputs, **kwargs)
 
     def title(self) -> str:
         """
-        Generate title of layer when summary.
+        Generate title of layer when summarized.
         :return: title of layer.
         """
         return self.name
 
     def detail(self) -> str:
         """
-        Generate the details of layer when plotted.
+        Generate details of layer when plotted.
         :return: details of layer.
         """
         return self.name
