@@ -6,8 +6,8 @@
 #  appropriate credit by citing the authors. If you adapt the materials, you must                                      -
 #  distribute your contributions under the same license as the original.                                               -
 # ----------------------------------------------------------------------------------------------------------------------
-from tensorflow_core.python.keras.backend import unique_object_name as unique_name
-from tensorflow_core.python.keras.utils.generic_utils import to_snake_case as snake_case
+from tensorflow.python.keras.backend import unique_object_name as unique_name
+from tensorflow.python.keras.utils.generic_utils import to_snake_case as snake_case
 
 
 # ----------------------------------------------------------------------------------------------------------------------
