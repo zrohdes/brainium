@@ -100,6 +100,7 @@ class Activation(Layer):
     ---------
     @author:    Hieu Pham.
     @created:   28th July, 2020.
+    @modified:  11st August, 2020.
     """
     def __init__(self, **kwargs):
         """
@@ -108,7 +109,7 @@ class Activation(Layer):
         """
         super(Activation, self).__init__(**kwargs)
         # Assign method.
-        self.method = self.args.get('method', 'sigmoid')
+        self.method = str(self.args.get('method', 'sigmoid')).lower()
         # Checking method.
         methods = list(ACTIVATIONS.keys())
         assert self.method in methods, \
@@ -116,7 +117,7 @@ class Activation(Layer):
         # Override parser for corrected activation method.
         self.parser = ACTIVATIONS[self.method]['parse']
         # Override arguments.
-        self.args = self.parse(**kwargs)
+        self.kwargs, self.args = self.parse(**kwargs)
         # Assign activation function.
         self.func = ACTIVATIONS[self.method]['func'](**self.args)
 
@@ -128,24 +129,24 @@ class Activation(Layer):
         """
         return list(ACTIVATIONS.keys())
 
-    def kwargparse(self, **kwargs) -> KwargParse:
+    def kwargparser(self, **kwargs) -> KwargParse:
         """
         Get keyword arguments parser.
-        :param kwargs:  keyword arguments to be passed.
-        :return:        a keyword arguments parser.
+        :param kwargs:  additional keyword arguments to be passed.
+        :return:        keyword arguments parser.
         """
-        return super(Activation, self).kwargparse(**kwargs).add('method', None, 'sigmoid')
+        return super(Activation, self).kwargparser(**kwargs).add('method', None, 'sigmoid')
 
     def title(self) -> str:
         """
-        Generate title of layer when summary.
+        Generate title of layer when summarized.
         :return: title of layer.
         """
         return '%s_activation_%s' % (self.method, self.term.suffix)
 
     def detail(self) -> str:
         """
-        Generate the details of layer when plotted.
+        Generate details of layer when plotted.
         :return: details of layer.
         """
         return 'method: %s' % self.method
