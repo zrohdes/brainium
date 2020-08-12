@@ -8,6 +8,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 from __future__ import absolute_import
 from .layer import Layer
+from .common import Flattens, Denses
 from .activation import Activation
 from .convolution import Convolution, Deconvolution
 from .pooling import Pooling
