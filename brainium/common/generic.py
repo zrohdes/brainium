@@ -16,8 +16,8 @@ def isinstances(x, types, nested=True) -> bool:
     :param nested:  use nested strategy or not.
     :return:        true or false.
     ---------
-    @author:    Hieu Tr. Pham.
-    @created:   28th June, 2020.
+    @author:    Hieu Pham.
+    @created:   28th July, 2020.
     """
     # In case of inputs is dict, test all its keys and values.
     if isinstance(x, dict) and nested:
@@ -38,8 +38,8 @@ def content(x, separator=', ', end=' and ', keys=None) -> str:
     :param keys:        keyword to show if inputs is dict.
     :return:            string that represents inputs.
     ---------
-    @author:    Hieu Tr. Pham.
-    @created:   28th June, 2020.
+    @author:    Hieu Pham.
+    @created:   28th July, 2020.
     """
     # In case of inputs is dict. Check its keys then treats its as list of contents.
     if isinstance(x, dict):

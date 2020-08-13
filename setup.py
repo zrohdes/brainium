@@ -15,7 +15,7 @@ with open("README.md", "r") as fh:
 setup(
     name='brainium',
     packages=find_packages(),
-    version='0.0.1',
+    version='0.0.2',
     license='CC BY-NC-SA 4.0',
     description='Machine learning library extended from Google Tensorflow with flexible prototyping features.',
     long_description=long_description,

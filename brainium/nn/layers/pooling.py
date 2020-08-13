@@ -6,90 +6,87 @@
 #  appropriate credit by citing the authors. If you adapt the materials, you must                                      -
 #  distribute your contributions under the same license as the original.                                               -
 # ----------------------------------------------------------------------------------------------------------------------
+from copy import copy
 from tensorflow import keras
 from brainium.nn.layers import Layer
-from brainium.common.generic import content
+from brainium.common import KwargParse, generic
 
 
-# ----------------------------------------------------------------------------------------------------------------------
-# POOLING
-# Progressively reduce the spatial size of the representation to reduce the amount
-# of parameters and computation in the network.
-# ----------------------------------------------------------------------------------------------------------------------
+# Default pooling arguments parser.
+PARSER = KwargParse().add('data_format', None, keras.backend.image_data_format())
+
+
 class Pooling(Layer):
     """
-    Progressively reduce the spatial size of the representation to reduce the amount
-    of parameters and computation in the network.
+    Reduce the spatial size of the representation by keep max elements in pooling window.
     ---------
-    @author:    Hieu Tr. Pham.
-    @modified:  21st July, 2020.
+    @author:    Hieu Pham.
+    @created:   13rd August, 2020.
     """
-
-    # Define available pooling operations.
+    # Define available operators.
     OPERATORS = {
-        'max': [keras.layers.MaxPool1D, keras.layers.MaxPool2D, keras.layers.MaxPool3D],
-        'avg': [keras.layers.AvgPool1D, keras.layers.AvgPool2D, keras.layers.AvgPool3D],
-        'global_max': [keras.layers.GlobalMaxPool1D, keras.layers.GlobalMaxPool2D, keras.layers.GlobalMaxPool3D],
-        'global_avg': [keras.layers.GlobalAvgPool1D, keras.layers.GlobalAvgPool2D, keras.layers.GlobalAvgPool3D]
+        'max': (keras.layers.MaxPool1D, keras.layers.MaxPool2D, keras.layers.MaxPool3D),
+        'avg': (keras.layers.AvgPool1D, keras.layers.AvgPool2D, keras.layers.AvgPool3D),
+        'global_max': (keras.layers.GlobalMaxPool1D, keras.layers.GlobalMaxPool2D, keras.layers.GlobalMaxPool3D),
+        'global_avg': (keras.layers.GlobalAvgPool1D, keras.layers.GlobalAvgPool2D, keras.layers.GlobalAvgPool3D)
+    }
+    # Define available arguments parsers.
+    PARSERS = {
+        'global': PARSER,
+        'local': copy(PARSER).add('size', 'pool_size', 2).add('strides', None, None).add('padding', None, 'valid')
     }
 
     def __init__(self, **kwargs):
         """
         Class constructor.
-        :param kwargs: keyword arguments to be passed.
+        :param kwargs:  keyword arguments to be passed.
         """
-        # Invoke parent constructor.
         super(Pooling, self).__init__(**kwargs)
-        # Init pooling method.
-        self.method = self.args.pop('method', 'max')
+        # Assign variables.
+        self.method = str(self.args.pop('method', 'max')).lower()
+
+    def kwargparser(self, **kwargs) -> KwargParse:
+        """
+        Get keyword arguments parser.
+        :param kwargs:  keyword arguments to be passed.
+        :return:        keyword arguments parser.
+        """
+        return super(Pooling, self).kwargparser(**kwargs).add('method', None, 'max')
 
     def build(self, input_shape):
         """
-        Build the layer.
-        :param input_shape: shape of input tensor.
+        Building process of layer when invoked.
+        :param input_shape: shape of input.
         :return:            any.
         """
-        # Calculate operation index based on dimension.
-        dim = len(input_shape) - 2 - 1
-        # Verify pooling method.
-        assert self.method in Pooling.OPERATORS, self.message('only supports: %s' % content(Pooling.OPERATORS.keys()))
-        # Verify pooling dimension.
-        assert 0 < dim < len(Pooling.OPERATORS), self.message('%s only supports dimension 1D, 2D and 3D.')
-        # Init pooling operation based on method and dimension.
-        self.operation = Pooling.OPERATORS[self.method][dim](**self.args)
-
-    def schema(self, **kwargs) -> dict:
-        """
-        Get arguments schema of layer.
-        :param kwargs:  additional keyword arguments to be passed.
-        :return:        arguments schema.
-        """
-        # Get method.
-        method = kwargs.get('method', 'max')
-        # Return schema based on method.
-        return dict() if 'global' in method else dict(size=2, strides=2, padding='valid')
-
-    def keymap(self, **kwargs) -> dict:
-        """
-        Get arguments keymap of layer.
-        :param kwargs:  additional keyword arguments to be passed.
-        :return:        arguments keymap.
-        """
-        # Get method.
-        method = kwargs.get('method', 'max')
-        # Return keymap based on method.
-        return dict() if 'global' in method else dict(size='pool_size')
+        # Calculate input dimension.
+        dim = len(input_shape) - 2
+        # Check method.
+        methods = list(Pooling.OPERATORS.keys())
+        assert self.method in methods, \
+            self.message('method %s not found. Try again with %s.' % (self.method, generic.content(methods)))
+        # Assign variables.
+        ops = Pooling.OPERATORS[self.method]
+        ndim = len(ops)
+        # Check dimension.
+        assert 0 < dim <= ndim, \
+            self.message('%s pool only supports dimension %s' % (self.method, ['%sD' % (i + 1) for i in range(ndim)]))
+        # Parse arguments.
+        self.parser = Pooling.PARSERS['global'] if 'global' in self.method else Pooling.PARSERS['local']
+        self.kwargs, self.args = self.parse(**self.kwargs)
+        # Assign operator function.
+        self.func = ops[dim - 1](**self.args)
 
     def title(self) -> str:
         """
-        Generate title of layer when summary.
+        Generate title of layer when summarized.
         :return: title of layer.
         """
-        return '%s_pooling_%s' % (self.method, self.taxonomy.suffix)
+        return '%s_pooling_%s' % (self.method, self.term.suffix)
 
     def detail(self) -> str:
         """
-        Generate the details of layer when plotted.
+        Generate details of layer when plotted.
         :return: details of layer.
         """
         return 'method: %s' % self.method

@@ -7,4 +7,5 @@
 #  distribute your contributions under the same license as the original.                                               -
 # ----------------------------------------------------------------------------------------------------------------------
 from __future__ import absolute_import
-from .kwargparser import KwargParser
+from .common import Common
+from .kwargparse import KwargParse
