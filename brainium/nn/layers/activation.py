@@ -142,7 +142,7 @@ class Activation(Layer):
         Generate title of layer when summarized.
         :return: title of layer.
         """
-        return '%s_activation_%s' % (self.method, self.term.suffix)
+        return '%s_%s' % (self.method, self.term.suffix)
 
     def detail(self) -> str:
         """

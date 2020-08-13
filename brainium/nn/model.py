@@ -41,7 +41,7 @@ class Model(keras.Model):
         # Create custom model network.
         end = self.network(tensor.make(end, -1), **(self.parse(term=term, **kwargs)[-1]))
         # Create model by invoking super constructor.
-        super(Model, self).__init__(inputs=begin, outputs=end, name=term.fullname)
+        super(Model, self).__init__(inputs=begin, outputs=tensor.make(end, -1), name=term.fullname)
 
     def kwargparser(self, **kwargs) -> KwargParse:
         """
@@ -129,7 +129,7 @@ class Model(keras.Model):
             rankdir='TB' if vertical else 'LR'
         )
 
-    def summary(self, line_length=120, positions=None, print_fn=None):
+    def summary(self, line_length=80, positions=None, print_fn=None):
         if not self.built:
             raise ValueError('This model has not yet been built. '
                              'Build the model first by calling `build()` or calling '
