@@ -12,4 +12,4 @@ from .common import Flattens, Denses
 from .activation import Activation
 from .convolution import Convolution, Deconvolution, UpSampling, Cropping, ZeroPadding
 from .pooling import Pooling
-from .noise import Dropout, GaussianNoise
+from .noise import Dropouts, GaussianNoise

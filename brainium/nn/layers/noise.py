@@ -9,7 +9,6 @@
 from tensorflow import keras
 from brainium.nn.layers import Layer
 from brainium.common import KwargParse, generic
-from tensorflow.keras.layers import GaussianNoise
 
 
 class SpatialDropout(Layer):
@@ -57,7 +56,7 @@ class SpatialDropout(Layer):
         self.func = ops[dim - 1](**self.args)
 
 
-class Dropout(Layer):
+class Dropouts(Layer):
     """
     Random drop units from neural network during training.
     ---------
@@ -88,11 +87,11 @@ class Dropout(Layer):
         Class constructor.
         :param kwargs:  keyword arguments to be passed.
         """
-        super(Dropout, self).__init__(**kwargs)
+        super(Dropouts, self).__init__(**kwargs)
         # Assign method.
         self.method = str(self.args.pop('method', None)).lower()
         # Assign variables.
-        ops = Dropout.OPERATORS
+        ops = Dropouts.OPERATORS
         methods = list(ops.keys())
         # Check method.
         assert self.method in methods, \
@@ -100,3 +99,28 @@ class Dropout(Layer):
         # Assign operator function.
         ops = ops[self.method]
         self.func = ops['func'](**(ops['parser'].parse(**self.kwargs) if 'parser' in ops else self.kwargs))
+
+
+class GaussianNoise(Layer):
+    """
+    Generate gaussian noise.
+    ---------
+    @author:    Hieu Pham.
+    @created:   13rd August, 2020.
+    """
+    def __init__(self, **kwargs):
+        """
+        Class constructor.
+        :param kwargs:  keyword arguments to be passed.
+        """
+        super(GaussianNoise, self).__init__(**kwargs)
+        # Assign operator function.
+        self.func = keras.layers.GaussianNoise(**self.args, name='guass')
+
+    def kwargparser(self, **kwargs) -> KwargParse:
+        """
+        Get keyword arguments parser.
+        :param kwargs:  keyword arguments to be passed.
+        :return:        keyword arguments parser.
+        """
+        return KwargParse().add('stddev', None, 1)
