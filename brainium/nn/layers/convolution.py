@@ -232,7 +232,7 @@ class TransposeConvolution(Layer):
         """
         Building process of layer when invoked.
         :param input_shape: shape of input.
-        :return:            anything.
+        :return:            any.
         """
         # Calculate input dimension.
         dim = len(input_shape) - 2
@@ -306,3 +306,139 @@ class Deconvolution(Layer):
         detail = '%s.' % detail
         # Return detail.
         return detail
+
+
+class UpSampling(Layer):
+    """
+    Upsample the input feature map to a desired output feature map.
+    ---------
+    @author:    Hieu Pham.
+    @created:   12nd August, 2020.
+    """
+    # Define available operators.
+    OPERATORS = (keras.layers.UpSampling1D, keras.layers.UpSampling2D, keras.layers.UpSampling3D)
+
+    def __init__(self, **kwargs):
+        """
+        Class constructor.
+        :param kwargs:  keyword arguments to be passed.
+        """
+        super(UpSampling, self).__init__(**kwargs)
+        # Assign variables.
+        self.interpolation = self.args.pop('interpolation', 'bilinear')
+
+    def kwargparser(self, **kwargs) -> KwargParse:
+        """
+        Get keyword arguments parser.
+        :param kwargs:  keyword arguments to be passed.
+        :return:        keyword arguments parser.
+        """
+        return KwargParse().add('size', None, 2).add('interpolation', None, 'bilinear')
+
+    def build(self, input_shape):
+        """
+        Building process of layer when invoked.
+        :param input_shape: shape of input.
+        :return:            any.
+        """
+        # Calculate input dimension.
+        dim = len(input_shape) - 2
+        # Assign operators.
+        ops = UpSampling.OPERATORS
+        # Check dimension.
+        assert 0 < dim <= len(ops), \
+            self.message('only supports dimension %s.' % generic.content(['%sD' % (i+1) for i in range(len(ops))]))
+        # In case of 2D, add interpolation.
+        if dim == 2:
+            self.args.update(interpolation=self.interpolation)
+        # Assign operator function.
+        self.func = ops[dim - 1](**self.args)
+
+
+class Cropping(Layer):
+    """
+    Remove unwanted outer values from tensor.
+    ---------
+    @author:    Hieu Pham.
+    @created:   12nd August, 2020.
+    """
+    # Define availables operators.
+    OPERATORS = (keras.layers.Cropping1D, keras.layers.Cropping2D, keras.layers.Cropping3D)
+
+    def __init__(self, **kwargs):
+        """
+        Class constructor.
+        :param kwargs:  keyword arguments to be passed.
+        """
+        super(Cropping, self).__init__(**kwargs)
+    
+    def kwargparser(self, **kwargs) -> KwargParse:
+        """
+        Get keyword arguments parser.
+        :param kwargs:  keyword arguments to be passed.
+        :return:        keyword arguments parser.
+        """
+        return KwargParse().add('cropping', None, 1).add('data_format', None, keras.backend.image_data_format())
+
+    def build(self, input_shape):
+        """
+        Building process of layer when invoked.
+        :param input_shape: shape of input.
+        :return:            any.
+        """
+        # Calculate input dimension.
+        dim = len(input_shape) - 2
+        # Assign variables.
+        ops = Cropping.OPERATORS
+        # Check dimension.
+        assert 0 < dim <= len(ops), \
+            self.message('only supports dimension %s.' % generic.content(['%sD' % (i + 1) for i in range(len(ops))]))
+        # In case of 1D, remove data format from arguments.
+        if dim == 1:
+            self.args.pop('data_format', None)
+        # Assign operator function.
+        self.func = ops[dim - 1](**self.args)
+
+
+class ZeroPadding(Layer):
+    """
+    ---------
+    @author:    Hieu Pham.
+    @created:   12nd August, 2020.
+    """
+    # Define available operators.
+    OPERATORS = (keras.layers.ZeroPadding1D, keras.layers.ZeroPadding2D, keras.layers.ZeroPadding3D)
+
+    def __init__(self, **kwargs):
+        """
+        Class constructor.
+        :param kwargs:  keyword arguments to be passed.
+        """
+        super(ZeroPadding, self).__init__(**kwargs)
+
+    def kwargparser(self, **kwargs) -> KwargParse:
+        """
+        Get keyword arguments parser.
+        :param kwargs:  keyword arguments to be passed.
+        :return:        keyword arguments parser.
+        """
+        return KwargParse().add('padding', None, 1).add('data_format', None, keras.backend.image_data_format())
+
+    def build(self, input_shape):
+        """
+        Building process of layer when invoked.
+        :param input_shape: shape of input.
+        :return:            any.
+        """
+        # Calculate input dimension.
+        dim = len(input_shape) - 2
+        # Assign variables.
+        ops = ZeroPadding.OPERATORS
+        # Check dimension.
+        assert 0 < dim <= len(ops), \
+            self.message('only supports dimension %s.' % generic.content(['%sD' % (i + 1) for i in range(len(ops))]))
+        # In case of 1D, remove data format from arguments.
+        if dim == 1:
+            self.args.pop('data_format', None)
+        # Assign operator function.
+        self.func = ops[dim - 1](**self.args)
