@@ -76,3 +76,17 @@ class Pooling(Layer):
         self.kwargs, self.args = self.parse(**self.kwargs)
         # Assign operator function.
         self.func = ops[dim - 1](**self.args)
+
+    def title(self) -> str:
+        """
+        Generate title of layer when summarized.
+        :return: title of layer.
+        """
+        return '%s_pooling_%s' % (self.method, self.term.suffix)
+
+    def detail(self) -> str:
+        """
+        Generate details of layer when plotted.
+        :return: details of layer.
+        """
+        return 'method: %s' % self.method
