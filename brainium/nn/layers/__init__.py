@@ -10,5 +10,6 @@ from __future__ import absolute_import
 from .layer import Layer
 from .common import Flattens, Denses
 from .activation import Activation
-from .convolution import Convolution, Deconvolution
+from .convolution import Convolution, Deconvolution, UpSampling, Cropping, ZeroPadding
 from .pooling import Pooling
+from .noise import Dropout, GaussianNoise
