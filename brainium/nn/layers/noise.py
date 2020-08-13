@@ -100,6 +100,20 @@ class Dropouts(Layer):
         ops = ops[self.method]
         self.func = ops['func'](**(ops['parser'].parse(**self.kwargs) if 'parser' in ops else self.kwargs))
 
+    def title(self) -> str:
+        """
+        Generate title of layer when summarized.
+        :return: title of layer.
+        """
+        return '%s_dropouts_%s' % (self.method, self.term.suffix)
+
+    def detail(self) -> str:
+        """
+        Generate details of layer when plotted.
+        :return: details of layer.
+        """
+        return 'method: %s' % self.method
+
 
 class GaussianNoise(Layer):
     """

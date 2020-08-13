@@ -8,8 +8,9 @@
 # ----------------------------------------------------------------------------------------------------------------------
 from __future__ import absolute_import
 from .layer import Layer
-from .common import Flattens, Denses
-from .activation import Activation
-from .convolution import Convolution, Deconvolution, UpSampling, Cropping, ZeroPadding
+from .merge import Merge
 from .pooling import Pooling
+from .activation import Activation
+from .common import Flattens, Denses
 from .noise import Dropouts, GaussianNoise
+from .convolution import Convolution, Deconvolution, UpSampling, Cropping, ZeroPadding
