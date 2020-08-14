@@ -109,6 +109,10 @@ class KwargParse(KwargParseInterface):
         :param kwargs:  keyword arguments to be parsed.
         :return:        arguments dict.
         """
+        # In case of containers is empty, return origin kwargs.
+        if len(self.containers) == 0:
+            return kwargs
+        # Otherwise.
         args = super(KwargParse, self).parse(args=args, **kwargs)
         # Parse arguments.
         for handle in self.containers.values():

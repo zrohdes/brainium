@@ -29,7 +29,7 @@ def isinstances(x, types, nested=True) -> bool:
     return isinstance(x, types)
 
 
-def content(x, separator=', ', end=' and ', keys=None) -> str:
+def content(x, separator=', ', end='and', keys=None) -> str:
     """
     Generate string that represent inputs in readable way.
     :param x:           inputs object.
@@ -40,6 +40,7 @@ def content(x, separator=', ', end=' and ', keys=None) -> str:
     ---------
     @author:    Hieu Pham.
     @created:   28th July, 2020.
+    @modified:  14th August, 2020.
     """
     # In case of inputs is dict. Check its keys then treats its as list of contents.
     if isinstance(x, dict):
@@ -47,6 +48,6 @@ def content(x, separator=', ', end=' and ', keys=None) -> str:
         return content(['%s=%s' % (arr[k] if k in arr else k, x[k]) for k in arr], separator, end)
     # In case of inputs is list. Make the represent string as below.
     elif isinstance(x, list):
-        return '%s%s%s' % (separator.join(x[:-1]), end if len(x) > 1 else '', x[-1])
+        return '%s%s%s' % (separator.join(x[:-1]), ' %s ' % end if len(x) > 1 else '', x[-1])
     # Otherwise, simple cast inputs to string.
     return str(x)
